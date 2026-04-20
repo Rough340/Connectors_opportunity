@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConnectorsATS Opportunity Dashboard</title>
+</head>
+<body>
+<h2 class="sr-only">ConnectorsATS opportunity dashboard</h2>
+
+<style>
+:root {
+  color-scheme: dark;
+  --font-sans: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+  --bg: #07111c;
+  --bg-2: #0b1727;
+  --panel: rgba(12, 22, 38, 0.82);
+  --panel-2: rgba(16, 28, 47, 0.92);
+  --panel-3: #101b2f;
+  --panel-soft: rgba(20, 35, 58, 0.7);
+  --text: #ecf3ff;
+  --text-soft: #bfd0e8;
+  --text-muted: #7f93af;
+  --border: rgba(148, 163, 184, 0.16);
+  --border-2: rgba(148, 163, 184, 0.24);
+  --shadow: 0 28px 80px rgba(0, 0, 0, 0.34);
+  --shadow-soft: 0 16px 32px rgba(0, 0, 0, 0.2);
+  --accent: #68a7ff;
+  --accent-2: #2dd4bf;
+  --success: #28c98d;
+  --warning: #ffb649;
+  --danger: #ff6b6b;
+  --grant-bg: rgba(40, 201, 141, 0.14);
+  --grant-text: #8af0be;
+  --accel-bg: rgba(104, 167, 255, 0.16);
+  --accel-text: #b4ceff;
+  --infra-bg: rgba(255, 182, 73, 0.16);
+  --infra-text: #ffd28c;
+  --contest-bg: rgba(255, 111, 166, 0.14);
+  --contest-text: #ffc2dd;
+  --hero-grad:
+    radial-gradient(circle at 10% 0%, rgba(104, 167, 255, 0.22), transparent 32%),
+    radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 28%),
+    linear-gradient(145deg, rgba(15, 25, 43, 0.96), rgba(9, 17, 29, 0.96));
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #eef4fb;
+  --bg-2: #f4f8fc;
+  --panel: rgba(255, 255, 255, 0.82);
+  --panel-2: rgba(255, 255, 255, 0.94);
+  --panel-3: #ffffff;
+  --panel-soft: rgba(244, 248, 252, 0.88);
+  --text: #101827;
+  --text-soft: #516276;
+  --text-muted: #7a899b;
+  --border: rgba(15, 23, 42, 0.1);
+  --border-2: rgba(15, 23, 42, 0.16);
+  --shadow: 0 28px 70px rgba(15, 23, 42, 0.1);
+  --shadow-soft: 0 12px 26px rgba(15, 23, 42, 0.08);
+  --accent: #2563eb;
+  --accent-2: #0f9f8f;
+  --success: #0f9f6e;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --grant-bg: #e7f8ee;
+  --grant-text: #19744b;
+  --accel-bg: #e8efff;
+  --accel-text: #2350be;
+  --infra-bg: #fff3e1;
+  --infra-text: #9b6217;
+  --contest-bg: #feeaf3;
+  --contest-text: #b24071;
+  --hero-grad:
+    radial-gradient(circle at 10% 0%, rgba(37, 99, 235, 0.15), transparent 32%),
+    radial-gradient(circle at 100% 0%, rgba(15, 159, 143, 0.14), transparent 28%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 246, 252, 0.98));
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-sans);
+  color: var(--text);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(104, 167, 255, 0.08), transparent 25%),
+    radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.08), transparent 22%),
+    linear-gradient(180deg, var(--bg), var(--bg-2));
+}
+button, input { font: inherit; }
+a { color: inherit; text-decoration: none; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.dashboard-shell {
+  width: min(1380px, calc(100% - 36px));
+  margin: 0 auto;
+  padding: 12px 0 56px;
+}
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.ambient::before,
+.ambient::after {
+  content: "";
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.28;
+  animation: drift 16s ease-in-out infinite alternate;
+}
+.ambient::before {
+  top: -120px;
+  left: -110px;
+  background: rgba(104, 167, 255, 0.36);
+}
+.ambient::after {
+  right: -110px;
+  top: 50px;
+  background: rgba(45, 212, 191, 0.24);
+  animation-duration: 20s;
+}
+
+.dashboard-shell > * { position: relative; z-index: 1; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn-icon {
+  margin-right: 0;
+  font-size: 20px;
+  line-height: 1;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.brand-mark {
+  width: auto;
+  height: 104px;
+  border-radius: 0;
+  display: block;
+  object-fit: contain;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  flex: 0 0 auto;
+}
+.brand-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.brand-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.brand-subtitle {
+  font-size: 13px;
+  color: var(--text-soft);
+  line-height: 1.45;
+}
+.theme-toggle {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+  backdrop-filter: blur(16px);
+}
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-2);
+}
+.refresh-btn {
+  border: 1px solid rgba(104, 167, 255, 0.18);
+  background: linear-gradient(135deg, rgba(104, 167, 255, 0.08), rgba(45, 212, 191, 0.06));
+}
+.refresh-btn[disabled] {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.22fr) minmax(320px, 0.86fr);
+  gap: 16px;
+  padding: 18px;
+  border-radius: 30px;
+  background: var(--hero-grad);
+  border: 1px solid rgba(104, 167, 255, 0.18);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  isolation: isolate;
+  transform-style: preserve-3d;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+.hero:hover {
+  border-color: rgba(104, 167, 255, 0.24);
+  box-shadow: 0 34px 92px rgba(15, 23, 42, 0.14);
+}
+.hero-pane {
+  position: relative;
+  z-index: 1;
+}
+.hero-watermark {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  width: min(64vw, 882px);
+  opacity: 0.065;
+  filter: grayscale(0.1) saturate(0.95);
+  pointer-events: none;
+  z-index: 0;
+}
+.hero-copy {
+  max-width: 720px;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+.hero-copy h1 {
+  font-size: clamp(28px, 3.1vw, 54px);
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+  margin-bottom: 2px;
+  max-width: 13.5ch;
+  text-wrap: balance;
+}
+.hero-copy p {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-soft);
+  max-width: 58ch;
+}
+.hero-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 13px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text-soft);
+  backdrop-filter: blur(14px);
+}
+.meta-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  box-shadow: 0 0 0 6px rgba(104, 167, 255, 0.08);
+}
+.hero-note {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  margin-top: 2px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(104, 167, 255, 0.28);
+  background:
+    linear-gradient(135deg, rgba(104, 167, 255, 0.09), rgba(45, 212, 191, 0.06)),
+    rgba(255, 255, 255, 0.22);
+  color: var(--text-soft);
+  line-height: 1.55;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  overflow: hidden;
+}
+.hero-note::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  opacity: 0.85;
+}
+.hero-note:hover {
+  transform: translateY(-1px);
+  border-color: rgba(104, 167, 255, 0.34);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+}
+.hero-note-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  font-size: 16px;
+  background: linear-gradient(135deg, rgba(104, 167, 255, 0.14), rgba(45, 212, 191, 0.1));
+  border: 1px solid rgba(104, 167, 255, 0.24);
+}
+.hero-note-body {
+  display: grid;
+  gap: 4px;
+}
+.hero-note-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+.hero-note-text {
+  font-size: 14px;
+  color: var(--text-soft);
+}
+.hero-note-pill {
+  padding: 8px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(104, 167, 255, 0.18);
+  background: rgba(104, 167, 255, 0.08);
+  color: var(--text-soft);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.hero-side {
+  display: grid;
+  gap: 12px;
+}
+.glass {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  backdrop-filter: blur(16px);
+}
+.snapshot {
+  padding: 18px;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.snapshot:hover,
+.prep-panel:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-2);
+  box-shadow: var(--shadow-soft);
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.summary-card {
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+}
+.summary-num {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+.summary-lbl {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+.summary-context {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  color: var(--text-soft);
+  line-height: 1.65;
+  font-size: 13px;
+}
+.prep-panel {
+  padding: 16px 18px;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.prep-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.prep-list {
+  display: grid;
+  gap: 10px;
+}
+.prep-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--text-soft);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.prep-index {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  color: var(--text);
+  background: linear-gradient(135deg, rgba(104, 167, 255, 0.18), rgba(45, 212, 191, 0.16));
+  border: 1px solid var(--border);
+  flex: 0 0 auto;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 18px 0 18px;
+}
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+.filter-btn:hover {
+  border-color: var(--border-2);
+  color: var(--text);
+}
+.filter-btn.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(4, 10, 20, 0.92), rgba(19, 31, 50, 0.96));
+  border-color: rgba(104, 167, 255, 0.24);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 12px 26px rgba(0, 0, 0, 0.24);
+}
+[data-theme="dark"] .filter-btn.active {
+  color: #0b1220;
+  background: #ffffff;
+  border-color: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.24);
+}
+.filter-btn[data-filter="easy"] {
+  border-color: rgba(40, 201, 141, 0.28);
+  box-shadow: 0 0 0 1px rgba(40, 201, 141, 0.08), 0 0 18px rgba(40, 201, 141, 0.12);
+}
+.filter-btn[data-filter="easy"]:hover {
+  border-color: rgba(40, 201, 141, 0.44);
+  box-shadow: 0 0 0 1px rgba(40, 201, 141, 0.12), 0 0 24px rgba(40, 201, 141, 0.18);
+}
+.filter-btn[data-filter="easy"].active {
+  background: linear-gradient(135deg, rgba(8, 30, 22, 0.98), rgba(14, 46, 34, 0.98));
+  border-color: rgba(40, 201, 141, 0.34);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 0 0 1px rgba(40, 201, 141, 0.12), 0 0 26px rgba(40, 201, 141, 0.22);
+}
+[data-theme="dark"] .filter-btn[data-filter="easy"].active {
+  color: #0b1220;
+  background: #ffffff;
+  border-color: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 0 0 1px rgba(40, 201, 141, 0.22), 0 0 26px rgba(40, 201, 141, 0.22);
+}
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.search-wrap {
+  position: relative;
+}
+.search-input {
+  width: min(360px, 76vw);
+  padding: 12px 14px 12px 42px;
+  border-radius: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  outline: none;
+}
+.search-input:focus {
+  border-color: rgba(104, 167, 255, 0.36);
+  box-shadow: 0 0 0 4px rgba(104, 167, 255, 0.08);
+}
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+}
+.results-meta {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(295px, 1fr));
+  gap: 18px;
+}
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 355px;
+  padding: 18px;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 28%),
+    linear-gradient(160deg, var(--panel-2), var(--panel-3));
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  transform: translateY(14px);
+  opacity: 0;
+  animation: cardIn 700ms cubic-bezier(.2,.8,.2,1) forwards;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  opacity: 0.85;
+}
+.card::after {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  top: -70px;
+  right: -50px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(104, 167, 255, 0.18), transparent 62%);
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+.card:hover {
+  transform: translateY(-6px);
+  border-color: var(--border-2);
+  box-shadow: var(--shadow);
+}
+.card:hover::after {
+  transform: scale(1.15);
+  opacity: 0.95;
+}
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.card-name {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  max-width: 13ch;
+}
+.card-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 7px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+.badge-grant { background: var(--grant-bg); color: var(--grant-text); }
+.badge-accel { background: var(--accel-bg); color: var(--accel-text); }
+.badge-infra { background: var(--infra-bg); color: var(--infra-text); }
+.badge-contest { background: var(--contest-bg); color: var(--contest-text); }
+.fit-chip {
+  font-size: 11px;
+  color: var(--text-soft);
+  border: 1px solid var(--border);
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.amount-band {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  margin-top: 18px;
+}
+.card-amount {
+  font-size: 42px;
+  line-height: 0.95;
+  font-weight: 700;
+  letter-spacing: -0.06em;
+}
+.amount-note {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 14ch;
+}
+.card-desc {
+  margin-top: 14px;
+  color: var(--text-soft);
+  font-size: 14px;
+  line-height: 1.75;
+}
+.signal-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.signal {
+  padding: 11px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+.signal-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.signal-value {
+  margin-top: 5px;
+  font-size: 14px;
+  color: var(--text);
+}
+.card-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.tag {
+  font-size: 12px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: var(--text-soft);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+}
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.eligibility {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+.eligibility-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.03);
+}
+.elig-easy { background: var(--success); }
+.elig-medium { background: var(--warning); }
+.elig-hard { background: var(--danger); }
+.detail-btn {
+  padding: 11px 15px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(104, 167, 255, 0.14), rgba(45, 212, 191, 0.1));
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+.detail-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(104, 167, 255, 0.3);
+}
+.empty-state {
+  padding: 38px 24px;
+  text-align: center;
+  color: var(--text-soft);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(3, 9, 18, 0.66);
+  backdrop-filter: blur(8px);
+}
+.modal {
+  width: min(820px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  border-radius: 28px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--panel-2), var(--panel-3));
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.modal-kicker {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.modal-title {
+  font-size: 30px;
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+  font-weight: 700;
+}
+.close-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--panel-soft);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 28px;
+  line-height: 1;
+}
+.modal-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.modal-pill {
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-soft);
+  font-size: 12px;
+}
+.modal-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+  gap: 16px;
+}
+.modal-section {
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+.modal-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.modal-section p,
+.modal-section li {
+  color: var(--text-soft);
+  line-height: 1.75;
+  font-size: 14px;
+}
+.modal-section ul {
+  padding-left: 18px;
+}
+.tip-card {
+  background: linear-gradient(135deg, rgba(104, 167, 255, 0.1), rgba(45, 212, 191, 0.08));
+}
+.source-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.source-link {
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-soft);
+}
+.apply-btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@keyframes drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(22px, 18px, 0) scale(1.08); }
+}
+@keyframes cardIn {
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient::before,
+  .ambient::after,
+  .card {
+    animation: none;
+  }
+  * {
+    scroll-behavior: auto;
+  }
+}
+
+@media (max-width: 1040px) {
+  .hero,
+  .modal-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-copy h1 {
+    max-width: 16ch;
+  }
+}
+@media (max-width: 760px) {
+  .dashboard-shell {
+    width: min(100% - 16px, 100%);
+    padding-top: 10px;
+  }
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .topbar-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .brand {
+    width: 100%;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-mark {
+    width: auto;
+    height: 86px;
+  }
+  .brand-copy {
+    display: grid;
+    gap: 3px;
+  }
+  .brand-title {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: initial;
+    font-size: 17px;
+  }
+  .brand-subtitle {
+    font-size: 12px;
+  }
+  .topbar-actions .theme-toggle,
+  .topbar-actions .refresh-btn {
+    width: 100%;
+    text-align: center;
+    padding: 12px 14px;
+  }
+  .hero {
+    gap: 14px;
+    padding: 16px;
+    border-radius: 24px;
+  }
+  .hero-copy {
+    max-width: none;
+  }
+  .hero-copy h1 {
+    max-width: 14ch;
+    font-size: clamp(28px, 7vw, 40px);
+  }
+  .hero-note {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+  .hero-note-pill {
+    white-space: normal;
+  }
+  .toolbar {
+    align-items: stretch;
+  }
+  .filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar {
+    display: none;
+  }
+  .filter-btn {
+    flex: 0 0 auto;
+  }
+  .toolbar-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-wrap {
+    width: 100%;
+  }
+  .search-input {
+    width: 100%;
+  }
+  .results-meta {
+    text-align: left;
+  }
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    min-height: unset;
+  }
+  .card-name {
+    font-size: 22px;
+  }
+  .amount-band {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+@media (max-width: 560px) {
+  .dashboard-shell {
+    width: calc(100% - 12px);
+    padding-top: 8px;
+  }
+  .topbar {
+    margin-bottom: 8px;
+  }
+  .brand {
+    align-items: flex-start;
+  }
+  .brand-mark {
+    width: auto;
+    height: 74px;
+  }
+  .brand-title {
+    font-size: 16px;
+  }
+  .brand-subtitle {
+    font-size: 11px;
+  }
+  .topbar-actions {
+    grid-template-columns: 1fr;
+  }
+  .hero {
+    padding: 14px;
+  }
+  .hero-watermark {
+    width: min(150vw, 780px);
+    opacity: 0.05;
+  }
+  .hero-copy h1 {
+    max-width: 12ch;
+    font-size: 30px;
+  }
+  .hero-copy p {
+    font-size: 14px;
+  }
+  .meta-pill,
+  .tag,
+  .detail-btn {
+    font-size: 11px;
+  }
+  .card {
+    padding: 16px;
+  }
+  .card-top {
+    flex-direction: column;
+  }
+  .card-badges {
+    width: 100%;
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .summary-grid,
+  .signal-row {
+    grid-template-columns: 1fr;
+  }
+  .summary-card {
+    padding: 14px;
+  }
+  .modal {
+    padding: 18px;
+    border-radius: 20px;
+  }
+}
+</style>
+
+<div class="ambient" aria-hidden="true"></div>
+
+<div class="dashboard-shell">
+  <div class="topbar">
+    <div class="brand">
+      <img class="brand-mark" src="ConnectorsATS_final_logo-removebg-preview.png" alt="ConnectorsATS logo">
+      <div class="brand-copy">
+        <div class="eyebrow">Founder funding map</div>
+        <div class="brand-title">ConnectorsATS Opportunity Dashboard</div>
+        <div class="brand-subtitle">A cleaner pipeline of grants, infra credits, accelerators, and startup programs for the current stage.</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="theme-toggle refresh-btn" id="refresh-btn" type="button" aria-label="Refresh opportunities"><span class="btn-icon">↻</span></button>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle theme"><span class="btn-icon">◐</span></button>
+    </div>
+  </div>
+
+  <section class="hero" id="hero-panel">
+    <img class="hero-watermark" src="ConnectorsATS_final_logo-removebg-preview.png" alt="" aria-hidden="true">
+    <div class="hero-pane hero-copy">
+      <div class="eyebrow">Capital stack planning</div>
+      <h1>Prioritize what is accessible now.</h1>
+      <p>
+        ConnectorsATS is already at MVP stage with a Bihar pilot live. This board separates immediate founder-friendly applications from the next layer that unlocks after incorporation, DPIIT, or incubator affiliation.
+      </p>
+      <div class="hero-meta">
+        <div class="meta-pill"><span class="meta-dot"></span>MVP stage</div>
+        <div class="meta-pill">Bihar pilot live</div>
+        <div class="meta-pill">Registration in process</div>
+        <div class="meta-pill">Patna, Bihar</div>
+      </div>
+      <div class="hero-note">
+        <div class="hero-note-icon">↗</div>
+        <div class="hero-note-body">
+          <div class="hero-note-title">Recommended sequence</div>
+          <div class="hero-note-text">Apply for eligible grants first, then secure infra credits and founder fellowships, and finally move into DPIIT-locked or incubator-led funding once paperwork is ready.</div>
+        </div>
+        <div class="hero-note-pill">Apply eligible first</div>
+      </div>
+    </div>
+
+    <div class="hero-side">
+      <div class="snapshot glass">
+        <div class="prep-title">Snapshot</div>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-num" id="total-count">17</div>
+            <div class="summary-lbl">Total opportunities</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-num" id="apply-now-count" style="color: var(--success);">8</div>
+            <div class="summary-lbl">Apply now</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-num" style="color: var(--warning);">&#8377;70L</div>
+            <div class="summary-lbl">Largest grant</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-num" style="color: var(--accent);">New</div>
+            <div class="summary-lbl">Web-sourced additions</div>
+          </div>
+        </div>
+        <div class="summary-context">
+          Added current ecosystem programs from official sources, including GitHub for Startups and NVIDIA Inception, to widen the low-cash-burn path before fundraising.
+        </div>
+      </div>
+
+      <div class="prep-panel glass">
+        <div class="prep-title">Prepare once, reuse everywhere</div>
+        <div class="prep-list">
+          <div class="prep-item"><span class="prep-index">01</span><span>Short deck with product thesis, Bihar pilot proof, founder story, and why mutual-intent hiring matters.</span></div>
+          <div class="prep-item"><span class="prep-index">02</span><span>One clean product demo link plus a basic landing page or company profile for startup-credit programs.</span></div>
+          <div class="prep-item"><span class="prep-index">03</span><span>Reusable application packet: founder IDs, incorporation docs, DPIIT when ready, and a one-page use-of-funds note.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <div class="filters" role="tablist" aria-label="Opportunity filters">
+      <button class="filter-btn active" data-filter="all" type="button">All</button>
+      <button class="filter-btn" data-filter="grant" type="button">Grants</button>
+      <button class="filter-btn" data-filter="accel" type="button">Accelerators</button>
+      <button class="filter-btn" data-filter="infra" type="button">Free infra</button>
+      <button class="filter-btn" data-filter="contest" type="button">Competitions</button>
+      <button class="filter-btn" data-filter="easy" type="button">Apply now</button>
+    </div>
+
+    <div class="toolbar-actions">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="search-input" type="search" placeholder="Search by program, tag, or institution" aria-label="Search opportunities">
+      </div>
+      <div class="results-meta" id="results-meta">Showing 17 of 17 opportunities</div>
+    </div>
+  </div>
+
+  <div class="cards-grid" id="cards-grid"></div>
+  <div id="modal-container"></div>
+</div>
+
+<script>
+const baseOpps = [
+  {
+    id: 1,
+    name: "SISFS - Startup India Seed Fund",
+    type: "grant",
+    amount: "&#8377;70L",
+    amountText: "Rs70L",
+    amountNote: "20L grant + 50L debt",
+    desc: "India's most meaningful MVP-stage public funding path if registration and DPIIT are in place.",
+    tags: ["Govt of India", "DPIIT required", "MVP stage"],
+    eligibility: "medium",
+    eligLabel: "Needs registration + DPIIT",
+    fit: "High fit",
+    signal: { speed: "Medium", leverage: "Very high", friction: "Docs heavy" },
+    details: {
+      benefit: "Non-dilutive grant support for prototyping and commercialization plus access through approved incubators.",
+      eligibility: ["DPIIT-recognized startup", "Recent incorporation", "51%+ Indian shareholding", "Prior government funding below threshold"],
+      docs: ["Certificate of Incorporation", "DPIIT recognition", "Business plan", "Financial projection", "Use-of-funds note", "Founder IDs"],
+      how: "Apply through the Startup India Seed Fund portal and prioritize incubators that can understand the local traction story.",
+      tip: "Lead with the Bihar pilot and show why the marketplace solves a structural hiring coordination problem, not just a job listing problem.",
+      url: "https://seedfund.startupindia.gov.in",
+      sources: []
+    }
+  },
+  {
+    id: 2,
+    name: "Bihar Startup Fund (ISV Program)",
+    type: "grant",
+    amount: "&#8377;10-25L",
+    amountText: "Rs10-25L",
+    amountNote: "Seed + matching grants",
+    desc: "State-level capital where Bihar traction and local narrative directly improve competitiveness.",
+    tags: ["Bihar Govt", "Local advantage", "MVP stage"],
+    eligibility: "medium",
+    eligLabel: "Needs company registration",
+    fit: "High fit",
+    signal: { speed: "Medium", leverage: "High", friction: "Moderate" },
+    details: {
+      benefit: "Seed grant support, incubation assistance, and investor visibility through Bihar's startup ecosystem.",
+      eligibility: ["Registered company in Bihar", "Tech-led startup", "Bihar-linked founder story preferred", "Early traction helps"],
+      docs: ["Company registration certificate", "Founder ID proof", "Pitch deck", "Pilot proof", "Bank details"],
+      how: "Apply through the Bihar portal and emphasize the live pilot plus direct employment-market relevance.",
+      tip: "This is one of the most narrative-compatible programs in the whole list.",
+      url: "https://udyogmitrabihar.in",
+      sources: []
+    }
+  },
+  {
+    id: 3,
+    name: "NIDHI-PRAYAS (DST)",
+    type: "grant",
+    amount: "&#8377;10L",
+    amountText: "Rs10L",
+    amountNote: "Prototype support",
+    desc: "A practical product-development grant if you can route through an incubator like IIT Patna.",
+    tags: ["DST Govt", "IIT Patna", "Sector-agnostic"],
+    eligibility: "medium",
+    eligLabel: "Needs company registration",
+    fit: "Local edge",
+    signal: { speed: "Medium", leverage: "High", friction: "Incubator-led" },
+    details: {
+      benefit: "Prototype and validation funding without dilution, often paired with ecosystem support.",
+      eligibility: ["Registered Indian startup", "Indian shareholding majority", "Incubation support", "Innovative product or service"],
+      docs: ["Incorporation certificate", "Incubation proof", "Technical note", "Prototype plan", "Founder details"],
+      how: "Use IIT Patna access as the entry point rather than treating this as a purely online grant hunt.",
+      tip: "Physical proximity to the incubator is a real advantage here.",
+      url: "https://iciitp.com",
+      sources: []
+    }
+  },
+  {
+    id: 4,
+    name: "NIDHI-EIR Fellowship (DST)",
+    type: "grant",
+    amount: "&#8377;30K/mo",
+    amountText: "Rs30K/mo",
+    amountNote: "12-18 months",
+    desc: "One of the cleanest founder-support options before full company readiness.",
+    tags: ["DST Govt", "IIT Patna", "Fellowship"],
+    eligibility: "easy",
+    eligLabel: "Apply now",
+    fit: "Immediate",
+    signal: { speed: "Fast", leverage: "Medium", friction: "Low" },
+    details: {
+      benefit: "Monthly founder support plus space, mentorship, and access to an incubator ecosystem.",
+      eligibility: ["Graduate or recent graduate", "Innovative startup idea", "No company required in many cases", "Apply through a NIDHI TBI"],
+      docs: ["Graduation proof", "One-page idea note", "Founder IDs", "Short pitch"],
+      how: "Contact a relevant incubator directly and ask for the current or next application cycle.",
+      tip: "This lowers founder burn while you tighten the company and DPIIT setup.",
+      url: "https://iciitp.com",
+      sources: []
+    }
+  },
+  {
+    id: 5,
+    name: "Google for Startups Cloud Program",
+    type: "infra",
+    amount: "Up to $200K",
+    amountText: "Up to 200K USD",
+    amountNote: "$350K for AI startups",
+    desc: "Current Google program support includes cloud credits, product support, mentors, and a higher ceiling for AI startups.",
+    tags: ["Official source", "Cloud credits", "AI upside"],
+    eligibility: "easy",
+    eligLabel: "Apply now",
+    fit: "Immediate",
+    signal: { speed: "Fast", leverage: "Very high", friction: "Low" },
+    details: {
+      benefit: "Google states that the Cloud Program can cover Google Cloud and Firebase costs up to $200,000 over two years, with up to $350,000 for AI startups, plus technical and business benefits.",
+      eligibility: ["Early startup journey", "Product or MVP helps", "AI startups can qualify for a higher benefit tier"],
+      docs: ["Founder profile", "Product summary", "Website or MVP link"],
+      how: "Apply through the official Google for Startups Cloud Program page with a concise product narrative and demo link.",
+      tip: "If ConnectorsATS is building AI-driven matching, mention that explicitly because Google currently highlights a higher AI-startup tier.",
+      url: "https://startup.google.com/cloud/",
+      sources: [{ label: "Official program page", url: "https://startup.google.com/cloud/" }]
+    }
+  },
+  {
+    id: 6,
+    name: "Microsoft for Startups",
+    type: "infra",
+    amount: "$5K+",
+    amountText: "5K plus",
+    amountNote: "Open offer now, more via investor path",
+    desc: "Microsoft's current startup stack now has an open-to-all Azure credit path, with larger benefits through the investor network.",
+    tags: ["Official source", "Azure", "AI tools"],
+    eligibility: "easy",
+    eligLabel: "Apply now",
+    fit: "Immediate",
+    signal: { speed: "Fast", leverage: "High", friction: "Low" },
+    details: {
+      benefit: "Microsoft Learn now describes an open offer with up to $5,000 in Azure credits, including $1,000 available immediately, while Microsoft also markets larger startup benefits for investor-network startups.",
+      eligibility: ["Software-based startup", "Open to all startups for the base offer", "Enhanced benefits depend on investor-network affiliation"],
+      docs: ["Startup profile", "Product description", "LinkedIn-backed team presence helps operationally"],
+      how: "Start with the open Microsoft for Startups path and upgrade later if investor, accelerator, or VC affiliations become available.",
+      tip: "This is better framed as a stack-building move than a single-credit move: Azure, dev tools, and ecosystem access compound together.",
+      url: "https://www.microsoft.com/en-us/startups",
+      sources: [
+        { label: "Microsoft for Startups", url: "https://www.microsoft.com/en-us/startups" },
+        { label: "Microsoft Learn overview", url: "https://learn.microsoft.com/en-us/startups/microsoft-for-startups/overview" }
+      ]
+    }
+  },
+  {
+    id: 7,
+    name: "AWS Activate",
+    type: "infra",
+    amount: "Up to $100K",
+    amountText: "Up to 100K USD",
+    amountNote: "$1K founders path, more via providers",
+    desc: "AWS now has a clear self-serve founders path and a larger provider-backed path, which makes it a realistic staged option.",
+    tags: ["Official source", "AWS credits", "Bedrock eligible"],
+    eligibility: "easy",
+    eligLabel: "Apply now",
+    fit: "Immediate",
+    signal: { speed: "Fast", leverage: "High", friction: "Low" },
+    details: {
+      benefit: "Official AWS pages describe an Activate Founders path for self-funded startups and a Portfolio path with eligibility for up to $100,000 in credits through providers. AWS also highlights eligibility for Bedrock usage.",
+      eligibility: ["Early-stage startup", "New to Activate credits or below prior threshold", "Provider affiliation unlocks the larger tier"],
+      docs: ["Startup details", "AWS account", "Company website or profile"],
+      how: "Apply first for the founders route if needed, then revisit through an incubator or provider relationship for the larger credit ceiling.",
+      tip: "This is strongest when treated as a runway extender, not as the primary story of the company.",
+      url: "https://aws.amazon.com/activate/",
+      sources: [
+        { label: "AWS Activate", url: "https://aws.amazon.com/activate/" },
+        { label: "AWS credit eligibility", url: "https://aws.amazon.com/activate/portfolio-signup" }
+      ]
+    }
+  },
+  {
+    id: 8,
+    name: "YC Startup School",
+    type: "accel",
+    amount: "Free",
+    amountText: "Free",
+    amountNote: "Pitch sharpening",
+    desc: "A low-friction way to sharpen the company story before bigger accelerator or investor applications.",
+    tags: ["Global", "No registration needed", "Founder prep"],
+    eligibility: "easy",
+    eligLabel: "Apply now",
+    fit: "Immediate",
+    signal: { speed: "Fast", leverage: "Medium", friction: "Low" },
+    details: {
+      benefit: "Founder education, network effects, and improved application quality across the rest of the stack.",
+      eligibility: ["Any founder globally", "Any stage", "Free to join"],
+      docs: ["Email signup"],
+      how: "Join early and use it to tighten your answers for grants, cloud programs, and any accelerator narrative.",
+      tip: "The practical payoff is sharper language and cleaner founder communication.",
+      url: "https://www.startupschool.org",
+      sources: []
+    }
+  },
+  {
+    id: 9,
+    name: "T-Hub Foundation",
+    type: "accel",
+    amount: "&#8377;5-15L",
+    amountText: "Rs5-15L",
+    amountNote: "Mentorship + investor access",
+    desc: "A strong national accelerator path once the company structure is cleaner and the pitch deck is polished.",
+    tags: ["National", "Investor connects", "Tech accelerator"],
+    eligibility: "medium",
+    eligLabel: "Needs registration",
+    fit: "Later",
+    signal: { speed: "Medium", leverage: "High", friction: "Moderate" },
+    details: {
+      benefit: "Program support, mentorship, network access, and a more investor-shaped operating rhythm.",
+      eligibility: ["Registered startup", "MVP or traction", "Innovative tech product"],
+      docs: ["Incorporation certificate", "Pitch deck", "MVP link", "Team details", "Financial model"],
+      how: "Target this after company setup and after early cloud-credit / fellowship applications are already underway.",
+      tip: "The story needs to sound venture-scalable here, not just socially useful.",
+      url: "https://t-hub.co",
+      sources: []
+    }
+  },
+  {
+    id: 10,
+    name: "NSRCEL - IIM Bangalore",
+    type: "accel",
+    amount: "&#8377;10-20L",
+    amountText: "Rs10-20L",
+    amountNote: "IIM network",
+    desc: "A good fit if the Bihar employment angle is positioned as both scalable and impact-oriented.",
+    tags: ["IIM network", "Social impact", "National"],
+    eligibility: "medium",
+    eligLabel: "Needs registration",
+    fit: "Later",
+    signal: { speed: "Medium", leverage: "High", friction: "Moderate" },
+    details: {
+      benefit: "Institutional credibility, mentors, demo days, and operational support.",
+      eligibility: ["MVP with traction", "Scalable model", "Social or economic impact helps"],
+      docs: ["Business plan", "Pitch deck", "Traction proof", "Team bios"],
+      how: "Apply once deck quality and company readiness are clearly above grant-application level.",
+      tip: "This should sound like a platform business with labor-market depth, not just a local pilot.",
+      url: "https://nsrcel.org",
+      sources: []
+    }
+  },
+  {
+    id: 11,
+    name: "Atal Innovation Mission",
+    type: "grant",
+    amount: "&#8377;10-50L",
+    amountText: "Rs10-50L",
+    amountNote: "Via AIC incubators",
+    desc: "A DPIIT-gated innovation funding path worth revisiting after paperwork is complete.",
+    tags: ["NITI Aayog", "DPIIT required", "Incubator route"],
+    eligibility: "medium",
+    eligLabel: "Needs DPIIT registration",
+    fit: "Later",
+    signal: { speed: "Medium", leverage: "High", friction: "Incubator-led" },
+    details: {
+      benefit: "Seed capital and product support through Atal incubation centers.",
+      eligibility: ["DPIIT startup", "Innovative tech company", "Application via an AIC"],
+      docs: ["DPIIT certificate", "Business plan", "Pitch deck", "Financial plan"],
+      how: "Treat this as part of the post-incorporation funding lane rather than an immediate task.",
+      tip: "The best path is often through relationships with the incubator, not just a form submission.",
+      url: "https://aim.gov.in",
+      sources: []
+    }
+  },
+  {
+    id: 12,
+    name: "Smart India Hackathon",
+    type: "contest",
+    amount: "&#8377;1-5L",
+    amountText: "Rs1-5L",
+    amountNote: "Prize + visibility",
+    desc: "Useful more for visibility and credibility than for cash itself.",
+    tags: ["No registration needed", "National visibility", "Govt exposure"],
+    eligibility: "easy",
+    eligLabel: "Apply now",
+    fit: "Immediate",
+    signal: { speed: "Fast", leverage: "Medium", friction: "Low" },
+    details: {
+      benefit: "Public-sector visibility and a legitimacy boost if the product story maps onto labor, skilling, or matching.",
+      eligibility: ["Any Indian founder or team", "No company registration needed", "Student teams allowed"],
+      docs: ["Team registration", "Problem statement fit", "Solution brief"],
+      how: "Use only if a relevant challenge theme appears; do not force-fit it.",
+      tip: "The return here is attention density, not financial density.",
+      url: "https://www.sih.gov.in",
+      sources: []
+    }
+  },
+  {
+    id: 13,
+    name: "Startup India Yatra (Bihar)",
+    type: "contest",
+    amount: "&#8377;2-10L",
+    amountText: "Rs2-10L",
+    amountNote: "Visibility + signal",
+    desc: "An efficient credibility move if the Bihar edition opens and timing is right.",
+    tags: ["Bihar specific", "Govt of India", "Annual"],
+    eligibility: "easy",
+    eligLabel: "Apply now",
+    fit: "Immediate",
+    signal: { speed: "Fast", leverage: "Medium", friction: "Low" },
+    details: {
+      benefit: "Recognition, visibility, and stronger positioning for later central programs.",
+      eligibility: ["Bihar-based founder", "Idea or MVP stage", "No DPIIT required to enter"],
+      docs: ["Founder ID", "MVP or business description", "Basic pitch deck"],
+      how: "Monitor the official Startup India channels and move quickly if the Bihar window opens.",
+      tip: "This works best as narrative amplification around the pilot, not as a standalone goal.",
+      url: "https://startupindia.gov.in",
+      sources: []
+    }
+  },
+  {
+    id: 14,
+    name: "Mukhyamantri Yuva Udyami Yojana",
+    type: "grant",
+    amount: "&#8377;10L",
+    amountText: "Rs10L",
+    amountNote: "Bihar founder scheme",
+    desc: "A useful Bihar-specific capital lane once the formal company layer is ready.",
+    tags: ["Bihar Govt", "Youth scheme", "Loan + grant"],
+    eligibility: "medium",
+    eligLabel: "Needs company registration",
+    fit: "Later",
+    signal: { speed: "Medium", leverage: "Medium", friction: "Moderate" },
+    details: {
+      benefit: "Youth-entrepreneur financing support with a more founder-accessible regional context.",
+      eligibility: ["Bihar resident", "Age criteria applies", "New business or startup", "Registration required"],
+      docs: ["Domicile proof", "Aadhaar and PAN", "Company registration", "Business plan"],
+      how: "Sequence this after registration and after the more immediate zero-equity cloud-credit programs.",
+      tip: "Use it only if the financing structure actually matches your cost profile.",
+      url: "https://udyogmitrabihar.in",
+      sources: []
+    }
+  },
+  {
+    id: 15,
+    name: "Y Combinator",
+    type: "accel",
+    amount: "$500K",
+    amountText: "500K USD",
+    amountNote: "For 7% equity",
+    desc: "Still a legitimate long-shot target because the company has a differentiated matching thesis and a local proof point.",
+    tags: ["Global", "Equity", "Top tier"],
+    eligibility: "medium",
+    eligLabel: "Apply next batch",
+    fit: "Aspirational",
+    signal: { speed: "Slow", leverage: "Very high", friction: "Very high" },
+    details: {
+      benefit: "Capital, distribution of credibility, and access to a global founder-investor network.",
+      eligibility: ["Any founder globally", "Strong market + product thesis", "MVP preferred"],
+      docs: ["Application answers", "Founder video", "Product metrics", "Sharp narrative"],
+      how: "Apply only when the story feels unusually crisp and your traction framing is disciplined.",
+      tip: "The core line is mutual-intent hiring as a structural market insight, not a feature bundle.",
+      url: "https://www.ycombinator.com/apply",
+      sources: []
+    }
+  },
+  {
+    id: 16,
+    name: "NVIDIA Inception",
+    type: "infra",
+    amount: "Free",
+    amountText: "Free program",
+    amountNote: "AI tools, offers, investor access",
+    desc: "A strong ecosystem add if AI matching, ranking, or model-assisted product features are part of the roadmap.",
+    tags: ["Official source", "AI program", "No cohorts"],
+    eligibility: "easy",
+    eligLabel: "Apply now",
+    fit: "Immediate",
+    signal: { speed: "Fast", leverage: "Medium", friction: "Low" },
+    details: {
+      benefit: "NVIDIA describes Inception as a free startup program with training, developer tools, partner offers, preferred pricing, cloud-credit access through NVIDIA and partners, and potential investor exposure.",
+      eligibility: ["AI startup at any stage", "No application fee", "No cohorts or deadlines listed on the official site"],
+      docs: ["Business description", "Product details", "Startup profile"],
+      how: "Apply directly via the NVIDIA Inception page and position ConnectorsATS around AI-driven matching, ranking, or recommendation systems if that is part of the roadmap.",
+      tip: "This is most valuable if the product can credibly claim an AI core rather than generic software usage.",
+      url: "https://www.nvidia.com/en-us/startups/",
+      sources: [
+        { label: "NVIDIA Inception", url: "https://www.nvidia.com/en-us/startups/" },
+        { label: "NVIDIA FAQ", url: "https://www.nvidia.com/en-us/startups/faq/" }
+      ]
+    }
+  },
+  {
+    id: 17,
+    name: "GitHub for Startups",
+    type: "infra",
+    amount: "$10K",
+    amountText: "10K credits",
+    amountNote: "Enterprise platform credits",
+    desc: "Useful if the team starts needing stronger engineering workflow, Copilot, Actions, or security tooling.",
+    tags: ["Official source", "Developer stack", "Partner-affiliated"],
+    eligibility: "medium",
+    eligLabel: "Needs outside funding or partner path",
+    fit: "Near-term",
+    signal: { speed: "Medium", leverage: "Medium", friction: "Partner-linked" },
+    details: {
+      benefit: "GitHub's current startup page describes up to $10,000 in platform credits and access to enterprise-grade developer tooling, with startup-partner affiliation playing a role in access.",
+      eligibility: ["Outside funding up to Series B or earlier for the main path shown", "New to relevant GitHub plans and credits", "Partner routes can extend savings"],
+      docs: ["Company email", "Startup details", "Funding or partner context if applicable"],
+      how: "Apply if engineering workflow cost is becoming real and you have the funding or partner affiliation GitHub asks for.",
+      tip: "This is not day-one priority, but it becomes useful once the product team and release velocity start scaling.",
+      url: "https://github.com/enterprise/startups",
+      sources: [
+        { label: "GitHub for Startups", url: "https://github.com/enterprise/startups" }
+      ]
+    }
+  }
+];
+
+let opps = [...baseOpps];
+
+const themeKey = "connectorsats-theme";
+const lightLogo = "Connectors_New_logo-cropped.png";
+const darkLogo = "Connectors_Logo_dark_mode-cropped.png";
+const cardsGrid = document.getElementById("cards-grid");
+const modalContainer = document.getElementById("modal-container");
+const resultsMeta = document.getElementById("results-meta");
+const searchInput = document.getElementById("search-input");
+const themeToggle = document.getElementById("theme-toggle");
+const refreshButton = document.getElementById("refresh-btn");
+const heroPanel = document.getElementById("hero-panel");
+const brandLogo = document.querySelector(".brand-mark");
+const heroWatermark = document.querySelector(".hero-watermark");
+const filterButtons = Array.from(document.querySelectorAll(".filter-btn"));
+const totalCount = document.getElementById("total-count");
+const applyNowCount = document.getElementById("apply-now-count");
+
+let activeFilter = "all";
+let searchTerm = "";
+
+function getTypeLabel(type) {
+  if (type === "grant") return "Grant";
+  if (type === "accel") return "Accelerator";
+  if (type === "infra") return "Free infra";
+  return "Competition";
+}
+
+function getEligibilityRank(eligibility) {
+  if (eligibility === "easy") return 0;
+  if (eligibility === "medium") return 1;
+  return 2;
+}
+
+function compareOpps(a, b) {
+  const eligibilityDiff = getEligibilityRank(a.eligibility) - getEligibilityRank(b.eligibility);
+  if (eligibilityDiff !== 0) return eligibilityDiff;
+  return a.name.localeCompare(b.name);
+}
+
+function normalizeOpportunity(raw, index) {
+  if (!raw || typeof raw !== "object") return null;
+  if (!raw.name || !raw.type || !raw.amount) return null;
+
+  const signal = raw.signal && typeof raw.signal === "object" ? raw.signal : {};
+  const details = raw.details && typeof raw.details === "object" ? raw.details : {};
+
+  return {
+    id: Number(raw.id) || (2000 + index),
+    name: String(raw.name),
+    type: String(raw.type),
+    amount: String(raw.amount),
+    amountText: String(raw.amountText || raw.amount),
+    amountNote: String(raw.amountNote || ""),
+    desc: String(raw.desc || ""),
+    tags: Array.isArray(raw.tags) ? raw.tags.map(String) : [],
+    eligibility: raw.eligibility === "easy" || raw.eligibility === "medium" || raw.eligibility === "hard" ? raw.eligibility : "medium",
+    eligLabel: String(raw.eligLabel || "Check eligibility"),
+    fit: String(raw.fit || "Live feed"),
+    signal: {
+      speed: String(signal.speed || "Medium"),
+      leverage: String(signal.leverage || "Medium"),
+      friction: String(signal.friction || "Medium")
+    },
+    details: {
+      benefit: String(details.benefit || raw.desc || ""),
+      eligibility: Array.isArray(details.eligibility) ? details.eligibility.map(String) : [],
+      docs: Array.isArray(details.docs) ? details.docs.map(String) : [],
+      how: String(details.how || ""),
+      tip: String(details.tip || ""),
+      url: String(details.url || raw.url || "#"),
+      sources: Array.isArray(details.sources)
+        ? details.sources
+            .filter((source) => source && source.label && source.url)
+            .map((source) => ({ label: String(source.label), url: String(source.url) }))
+        : []
+    }
+  };
+}
+
+async function loadLiveFeed(forceRefresh = false) {
+  const liveFeedUrl = window.CONNECTORSATS_FEED_URL || localStorage.getItem("connectorsats-live-feed-url") || "connectorsATS_live_feed.json";
+  const separator = liveFeedUrl.includes("?") ? "&" : "?";
+  const requestUrl = `${liveFeedUrl}${separator}ts=${Date.now()}${forceRefresh ? "&refresh=1" : ""}`;
+
+  try {
+    const response = await fetch(requestUrl, {
+      cache: "no-store"
+    });
+    if (!response.ok) throw new Error(`Feed request failed with ${response.status}`);
+
+    const payload = await response.json();
+    const list = Array.isArray(payload) ? payload : Array.isArray(payload.opportunities) ? payload.opportunities : [];
+    const liveOpps = list
+      .map((item, index) => normalizeOpportunity(item, index))
+      .filter(Boolean);
+
+    const merged = [...baseOpps];
+    const existingKeys = new Set(merged.map((item) => `${item.name}|${item.type}`));
+
+    liveOpps.forEach((item) => {
+      const key = `${item.name}|${item.type}`;
+      if (!existingKeys.has(key)) {
+        merged.push(item);
+        existingKeys.add(key);
+      }
+    });
+
+    opps = merged;
+  } catch (error) {
+    opps = [...baseOpps];
+  }
+}
+
+function getFilteredOpps() {
+  const q = searchTerm.trim().toLowerCase();
+  const filtered = opps.filter((opp) => {
+    const matchesFilter =
+      activeFilter === "all" ? true :
+      activeFilter === "easy" ? opp.eligibility === "easy" :
+      opp.type === activeFilter;
+
+    const haystack = [
+      opp.name,
+      opp.desc,
+      opp.amountText,
+      opp.amountNote,
+      opp.eligLabel,
+      opp.fit,
+      opp.signal.speed,
+      opp.signal.leverage,
+      opp.signal.friction,
+      ...opp.tags
+    ].join(" ").toLowerCase();
+
+    return matchesFilter && (!q || haystack.includes(q));
+  });
+
+  return activeFilter === "all" ? filtered.sort(compareOpps) : filtered;
+}
+
+function updateMeta(filtered) {
+  totalCount.textContent = opps.length;
+  applyNowCount.textContent = opps.filter((opp) => opp.eligibility === "easy").length;
+  resultsMeta.textContent = `Showing ${filtered.length} of ${opps.length} opportunities`;
+}
+
+function renderCards() {
+  const filtered = getFilteredOpps();
+  updateMeta(filtered);
+
+  if (!filtered.length) {
+    cardsGrid.innerHTML = `
+      <div class="empty-state">
+        <strong>No matching opportunities</strong>
+        <p style="margin-top: 10px;">Try a different filter or clear the search.</p>
+      </div>
+    `;
+    return;
+  }
+
+  cardsGrid.innerHTML = filtered.map((opp, index) => `
+    <article class="card" style="animation-delay:${index * 40}ms;">
+      <div class="card-top">
+        <div class="card-name">${opp.name}</div>
+        <div class="card-badges">
+          <span class="badge badge-${opp.type}">${getTypeLabel(opp.type)}</span>
+          <span class="fit-chip">${opp.fit}</span>
+        </div>
+      </div>
+
+      <div class="amount-band">
+        <div class="card-amount">${opp.amount}</div>
+        <div class="amount-note">${opp.amountNote}</div>
+      </div>
+
+      <div class="card-desc">${opp.desc}</div>
+
+      <div class="signal-row">
+        <div class="signal">
+          <div class="signal-label">Speed</div>
+          <div class="signal-value">${opp.signal.speed}</div>
+        </div>
+        <div class="signal">
+          <div class="signal-label">Leverage</div>
+          <div class="signal-value">${opp.signal.leverage}</div>
+        </div>
+        <div class="signal">
+          <div class="signal-label">Friction</div>
+          <div class="signal-value">${opp.signal.friction}</div>
+        </div>
+      </div>
+
+      <div class="card-tags">${opp.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}</div>
+
+      <div class="card-footer">
+        <div class="eligibility">
+          <span class="eligibility-dot elig-${opp.eligibility}"></span>
+          <span>${opp.eligLabel}</span>
+        </div>
+        <button class="detail-btn" type="button" data-id="${opp.id}">View details</button>
+      </div>
+    </article>
+  `).join("");
+
+  document.querySelectorAll(".detail-btn").forEach((button) => {
+    button.addEventListener("click", () => showModal(Number(button.dataset.id)));
+  });
+}
+
+function showModal(id) {
+  const opp = opps.find((item) => item.id === id);
+  if (!opp) return;
+
+  const sourceLinks = opp.details.sources.length
+    ? `<div class="source-links">${opp.details.sources.map((source) => `<a class="source-link" href="${source.url}" target="_blank" rel="noopener noreferrer">${source.label}</a>`).join("")}</div>`
+    : "";
+
+  modalContainer.innerHTML = `
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-header">
+          <div>
+            <div class="modal-kicker">${getTypeLabel(opp.type)}</div>
+            <div class="modal-title" id="modal-title">${opp.name}</div>
+          </div>
+          <button class="close-btn" id="close-modal" type="button" aria-label="Close">×</button>
+        </div>
+
+        <div class="modal-meta">
+          <div class="modal-pill">${opp.amount}</div>
+          <div class="modal-pill">${opp.amountNote}</div>
+          <div class="modal-pill">${opp.eligLabel}</div>
+          <div class="modal-pill">${opp.fit}</div>
+        </div>
+
+        <div class="modal-grid">
+          <div class="modal-section">
+            <div class="modal-section-title">Benefit</div>
+            <p>${opp.details.benefit}</p>
+          </div>
+          <div class="modal-section tip-card">
+            <div class="modal-section-title">ConnectorsATS angle</div>
+            <p>${opp.details.tip}</p>
+            ${sourceLinks}
+          </div>
+          <div class="modal-section">
+            <div class="modal-section-title">Eligibility</div>
+            <ul>${opp.details.eligibility.map((item) => `<li>${item}</li>`).join("")}</ul>
+          </div>
+          <div class="modal-section">
+            <div class="modal-section-title">Documents needed</div>
+            <ul>${opp.details.docs.map((item) => `<li>${item}</li>`).join("")}</ul>
+          </div>
+          <div class="modal-section" style="grid-column: 1 / -1;">
+            <div class="modal-section-title">How to apply</div>
+            <p>${opp.details.how}</p>
+          </div>
+        </div>
+
+        <button class="apply-btn" id="open-portal" type="button">Open application portal</button>
+      </div>
+    </div>
+  `;
+
+  const overlay = document.getElementById("modal-overlay");
+  document.getElementById("close-modal").addEventListener("click", closeModal);
+  document.getElementById("open-portal").addEventListener("click", () => openLink(opp.details.url));
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) closeModal();
+  });
+}
+
+function closeModal() {
+  modalContainer.innerHTML = "";
+}
+
+function openLink(url) {
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  themeToggle.innerHTML = theme === "light"
+    ? '<span class="btn-icon">◐</span>'
+    : '<span class="btn-icon">◑</span>';
+
+  const logoSrc = theme === "dark" ? darkLogo : lightLogo;
+  if (brandLogo) brandLogo.src = logoSrc;
+  if (heroWatermark) heroWatermark.src = logoSrc;
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+  const next = current === "light" ? "dark" : "light";
+  localStorage.setItem(themeKey, next);
+  applyTheme(next);
+}
+
+function initTheme() {
+  const stored = localStorage.getItem(themeKey);
+  applyTheme(stored || "dark");
+}
+
+function setRefreshState(isRefreshing) {
+  refreshButton.disabled = isRefreshing;
+  refreshButton.innerHTML = isRefreshing
+    ? '<span class="btn-icon">↻</span>'
+    : '<span class="btn-icon">↻</span>';
+}
+
+async function refreshOpportunities() {
+  setRefreshState(true);
+  await loadLiveFeed(true);
+  renderCards();
+  setRefreshState(false);
+}
+
+function bindHeroMotion() {
+  if (!heroPanel) return;
+
+  heroPanel.addEventListener("pointermove", (event) => {
+    const rect = heroPanel.getBoundingClientRect();
+    const offsetX = (event.clientX - rect.left) / rect.width - 0.5;
+    const offsetY = (event.clientY - rect.top) / rect.height - 0.5;
+    const rotateY = offsetX * 2.4;
+    const rotateX = offsetY * -2.2;
+    heroPanel.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+  });
+
+  heroPanel.addEventListener("pointerleave", () => {
+    heroPanel.style.transform = "perspective(1200px) rotateX(0deg) rotateY(0deg)";
+  });
+}
+
+filterButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    activeFilter = button.dataset.filter;
+    filterButtons.forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
+    renderCards();
+  });
+});
+
+searchInput.addEventListener("input", (event) => {
+  searchTerm = event.target.value;
+  renderCards();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeModal();
+});
+
+themeToggle.addEventListener("click", toggleTheme);
+refreshButton.addEventListener("click", refreshOpportunities);
+
+async function boot() {
+  initTheme();
+  await loadLiveFeed();
+  renderCards();
+  bindHeroMotion();
+  setInterval(async () => {
+    await loadLiveFeed();
+    renderCards();
+  }, 300000);
+}
+
+boot();
+</script>
+</body>
+</html>
